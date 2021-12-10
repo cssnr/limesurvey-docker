@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  limesurvey:
+    image: martialblog/limesurvey:latest
+    env_file: settings.env
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.loadtest-http.rule=Host(`survey.cssnr.com`)
+        - traefik.http.routers.loadtest-http.entrypoints=http
+        - traefik.http.routers.loadtest-http.middlewares=https-redirect
+        - traefik.http.routers.loadtest-https.rule=Host(`survey.cssnr.com`)
+        - traefik.http.routers.loadtest-https.entrypoints=https
+        - traefik.http.routers.loadtest-https.tls=true
+        - traefik.http.services.loadtest.loadbalancer.server.port=80
+        - traefik.http.services.loadtest.loadbalancer.server.scheme=http
+    volumes:
+      - lime_data:/var/www/html/upload/surveys
+    ports:
+      - 80:80
+
+volumes:
+  lime_data:
